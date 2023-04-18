@@ -3,19 +3,10 @@ pragma solidity ^0.8.17;
 
 
 interface ITask {
+    event InvalidSignature(address signer, bytes32 taskId, bytes32 hash);
+
     struct Task {
         uint128 number;
-        uint128 blockNumber;
+        uint64 blockNumber;
     }
-
-    struct Responses {
-        address[] operators;
-        uint256[] responses;
-    }
-
-    struct SquareData {
-        mapping (address => uint256) responses;
-        // set of possible responses
-    }
-
 }
