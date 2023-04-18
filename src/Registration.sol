@@ -31,7 +31,7 @@ contract Registration {
         uint64 blockNumber
     ) external view returns (bool) {
         Operator memory op = operatorDetails[operator];
-        if (op.fromBlockNumber == 0) {
+        if (op.fromBlockNumber == 0 || op.fromBlockNumber > blockNumber) {
             return false;
         }
         if (op.toBlockNumber == 0) {

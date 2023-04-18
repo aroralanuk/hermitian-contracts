@@ -2,10 +2,11 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/utils/cryptography/ECDSA.sol";
+import "@openzeppelin-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/ITask.sol";
 import "./Registration.sol";
 
-contract Task is ITask {
+contract Task is ITask, OwnableUpgradeable {
     using ECDSA for bytes32;
 
     mapping (bytes32 => Task) public tasks;
@@ -45,7 +46,7 @@ contract Task is ITask {
         bytes32[] calldata _r,
         bytes32[] calldata _s,
         uint8[] calldata _v
-    ) external returns (bool) {
+    ) external onlyOwner returns (bool) {
         require(
             _r.length == _s.length && _r.length == _v.length,
             "Invalid signature component lengths"
