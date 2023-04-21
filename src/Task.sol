@@ -67,6 +67,9 @@ contract Task is ITask, Ownable {
     }
 
 
+    // @dev post batch of tasks at any point in time
+    // @param numbers array of numbers to be squared
+    // @param blockNumbers array of block numbers at which the task is posted
     function postTasks(
         uint128[] calldata numbers,
         uint64[] calldata blockNumbers
@@ -84,7 +87,12 @@ contract Task is ITask, Ownable {
         tasksRemaining += numbers.length;
     }
 
-
+    // @notice post responses from a trusted relay which contains operator signatures
+    // @param _taskId task id
+    // @param _responseData concatenated operator responses
+    // @param _r array of r components of operator signatures
+    // @param _s array of s components of operator signatures
+    // @param _v array of v components of operator signatures
     function submitTask(
         bytes32 _taskId,
         bytes calldata _responseData,
@@ -133,6 +141,23 @@ contract Task is ITask, Ownable {
         return true;
     }
 
+    // @notice complete task by selecting a random response from the set of valid responses
+    // @param _taskId task id
+    // @return actualSquare the actual square of the number
+    function completeTask(
+        bytes32 _taskId
+    ) external isChallengeOver(_taskId) returns (uint256 actualSquare) {
+        require(potentialSquares[_taskId].length() > 0, "Task: no valid responses");
+        require(tasks[_taskId].square == 0, "Task: task already completed");
+
+        uint256 randomIndex = _getPseudoRandom() % potentialSquares[_taskId].length();
+
+        actualSquare = potentialSquares[_taskId].at(randomIndex);
+
+        tasks[_taskId].square = actualSquare;
+        tasksRemaining -= 1;
+    }
+
     function isActive(
         address _operator
     ) public view returns (bool) {
@@ -147,19 +172,6 @@ contract Task is ITask, Ownable {
     }
 
 
-    function completeTask(
-        bytes32 _taskId
-    ) external isChallengeOver(_taskId) returns (uint256 actualSquare) {
-        require(potentialSquares[_taskId].length() > 0, "Task: no valid responses");
-        require(tasks[_taskId].square == 0, "Task: task already completed");
-
-        uint256 randomIndex = _getPseudoRandom() % potentialSquares[_taskId].length();
-
-        actualSquare = potentialSquares[_taskId].at(randomIndex);
-
-        tasks[_taskId].square = actualSquare;
-        tasksRemaining -= 1;
-    }
 
     function inChallengeWindow(bytes32 _taskId) external view returns (bool) {
         uint64 blockAtChallengeWindowEnd = _getBlockAtChallengeWindowEnd(_taskId);
